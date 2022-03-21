@@ -18,8 +18,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api', authRouter);
 
 
-db.sequelize.sync();
-
 db.sequelize.sync({ force: false }).then(() => {
     console.log("Drop and re-sync db.");
 });

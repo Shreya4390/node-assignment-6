@@ -1,15 +1,13 @@
 const db = require("../models");
 const User = db.users;
 const Op = db.Sequelize.Op;
+const { createOne, updateOne, deleteOne, findOne, findAll, deleteAll } = require('../sequlize/sequelize')
+
 const { validationResult } = require('express-validator');
 
 // Create and Save a new User
 exports.createUser = (req, res) => {
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
         // Create a User
         const user = {
             username: req.body.username,
@@ -21,17 +19,18 @@ exports.createUser = (req, res) => {
             city: req.body.city,
             country: req.body.country
         };
+
         // Save User in the database
-        User.create(user)
-            .then(data => {
-                res.send(data);
-            })
-            .catch(err => {
-                res.status(500).send({
-                    message:
-                        err.message || "Some error occurred while creating the user."
-                });
+        createOne(user).then((data) => {
+            if (data) {
+                res.send({ message: "User added successfully", data: data.dataValues });
+            }
+        }).catch(err => {
+            res.status(500).send({
+                message:
+                    err.message || "Some error occurred while creating the user."
             });
+        });
     } catch (err) {
         res.status(400).json(err);
     }
@@ -40,16 +39,9 @@ exports.createUser = (req, res) => {
 // Update a User by the id in the request
 exports.updateUserDetails = async (req, res) => {
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
         const id = JSON.parse(req.params.id);
 
-        User.update(req.body, {
-            where: { id: id }
-        }).then(data => {
+        updateOne(req.body, id).then((data) => {
             if (data) {
                 res.send({
                     message: "User details updated successfully."
@@ -66,38 +58,33 @@ exports.updateUserDetails = async (req, res) => {
         });
     } catch (err) {
         res.status(400).json(err);
-    }
-
+    };
 };
 
 // Delete a User with the specified id in the request
 exports.deleteUser = (req, res) => {
     const id = JSON.parse(req.params.id);
-    User.destroy({
-        where: { id: id }
-    })
-        .then(num => {
-            if (num == 1) {
-                res.send({
-                    message: "User was deleted successfully!"
-                });
-            } else {
-                res.send({
-                    message: `Cannot delete User with id=${id}. Maybe User was not found!`
-                });
-            }
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: "Could not delete User with id=" + id
+    deleteOne(id).then(num => {
+        if (num == 1) {
+            res.send({
+                message: "User was deleted successfully!"
             });
+        } else {
+            res.send({
+                message: `Cannot delete User with id=${id}. Maybe User was not found!`
+            });
+        }
+    }).catch(err => {
+        res.status(500).send({
+            message: "Could not delete User with id=" + id
         });
+    });
 };
 
 // Find a single User with an id
 exports.findUser = (req, res) => {
     const id = JSON.parse(req.params.id);
-    User.findByPk(id)
+    findOne(id)
         .then(data => {
             if (data) {
                 res.send(data);
@@ -106,8 +93,7 @@ exports.findUser = (req, res) => {
                     message: `Cannot find User with id=${id}.`
                 });
             }
-        })
-        .catch(err => {
+        }).catch(err => {
             res.status(500).send({
                 message: `Error retrieving User with id=${id}.`
             });
@@ -116,24 +102,8 @@ exports.findUser = (req, res) => {
 
 // Retrieve all Users from the database.
 exports.findAllUser = (req, res) => {
-    const searchby = req.query.search
-    User.findAll({
-        where: {
-            [Op.and]: {
-                [Op.or]: {
-                    occupation: {
-                        [Op.in]: ['self employed', 'job']
-                    },
-                    age: {
-                        [Op.between]: [44, 90]
-                    }
-                },
-            },
-            [Op.or]: {
-                country: { [Op.like]: `%${searchby}%` }
-            }
-        }
-    }).then(data => {
+    const searchby = req.query.search;
+    findAll(searchby).then(data => {
         res.send(data);
     })
         .catch(err => {
@@ -146,10 +116,7 @@ exports.findAllUser = (req, res) => {
 
 // Delete all Users from the database.
 exports.deleteAllUsers = (req, res) => {
-    User.destroy({
-        where: {},
-        truncate: false
-    }).then(data => {
+    deleteAll().then(data => {
         if (data) {
             res.send({ message: `Users were deleted successfully!` });
         }
