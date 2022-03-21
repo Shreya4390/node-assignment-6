@@ -17,11 +17,18 @@ app.use(express.urlencoded({ extended: true }));
 //Routes 
 app.use('/api', authRouter);
 
+db.sequelize
+    .authenticate()
+    .then(() => {
+        console.log('Connection to the database has been established successfully.');
+    })
+    .catch(error => {
+        console.error(error);
+    });
 
 db.sequelize.sync({ force: false }).then(() => {
     console.log("Drop and re-sync db.");
 });
-
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

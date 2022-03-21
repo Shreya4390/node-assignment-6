@@ -45,8 +45,8 @@ async function findAll(search) {
                 country: { [Op.like]: `%${search}%` }
             }
         }
-
     });
+
     return userdata;
 };
 
@@ -56,7 +56,8 @@ async function deleteAll() {
         truncate: false
     });
     return userdata;
-}
+};
+
 module.exports = {
     createOne,
     updateOne,

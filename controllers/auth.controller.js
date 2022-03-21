@@ -1,7 +1,7 @@
 const db = require("../models");
 const User = db.users;
 const Op = db.Sequelize.Op;
-const { createOne, updateOne, deleteOne, findOne, findAll, deleteAll } = require('../sequlize/sequelize')
+const { createOne, updateOne, deleteOne, findOne, findAll, deleteAll } = require('../repository/user-sequlizer')
 
 const { validationResult } = require('express-validator');
 
@@ -19,7 +19,6 @@ exports.createUser = (req, res) => {
             city: req.body.city,
             country: req.body.country
         };
-
         // Save User in the database
         createOne(user).then((data) => {
             if (data) {

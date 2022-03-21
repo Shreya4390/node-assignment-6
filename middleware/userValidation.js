@@ -13,7 +13,6 @@ function userValidation() {
             check('country').isLength({ min: 3, max: 20 }).withMessage('Country must be at least 5 and no more than 16 characters.'),
         ]
     ]);
-
 }
 
 module.exports = {
